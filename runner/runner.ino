@@ -4,14 +4,16 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-// Wi-Fi and Gemini API
-const char* ssid = "Josh-12-M-2";
-const char* password = "HelloWave1!";
-const char* gemini_api_key = "AIzaSyAf0lnGC1ntkWYC4dyQzUoEYiwtGFxJ2wo";
+// ------------- SETTINGS ------------------
 
-// Prototypes
-void playSound(int frequency, bool success = false, bool fail = false);
-void showStatusScreen(String message, uint16_t bgColor);
+// Wi-Fi credentials
+const char* ssid = "Josh-12-M-2";           
+const char* password = "HelloWave1!";       
+
+// Gemini API Key
+const char* gemini_api_key = "AIzaSyAf0lnGC1ntkWYC4dyQzUoEYiwtGFxJ2wo";  
+
+// ------------- SETUP ------------------
 
 void setup() {
   M5.begin();
@@ -35,48 +37,61 @@ void setup() {
     attempts++;
     if (attempts > 20) {
       Serial.println("\nWiFi connection failed!");
-      showStatusScreen("WiFi Fail", BLUE);
-      while (true); // Stop here
+      M5.Lcd.fillScreen(BLUE);
+      M5.Lcd.setCursor(10, 30);
+      M5.Lcd.println("WiFi FAIL!");
+      while (true); // Stop program
     }
   }
+
   Serial.println("\nWiFi Connected!");
   Serial.println(WiFi.localIP());
 
-  showStatusScreen("Ready!", BLACK);
+  // Ready screen
+  M5.Lcd.fillScreen(BLACK);
+  M5.Lcd.setCursor(10, 30);
+  M5.Lcd.println("Ready!");
 }
+
+// ------------- MAIN LOOP ------------------
 
 void loop() {
   Serial.println("Starting fact check...");
 
-  String userFact = "The sun is a star";
+  String userFact = "The sun is a star";  // <-- CHANGE fact here
   Serial.println("Fact to check: " + userFact);
 
-  // Yellow for "processing"
-  showStatusScreen("Checking...", YELLOW);
+  // Show checking screen
+  M5.Lcd.fillScreen(YELLOW);
+  M5.Lcd.setCursor(10, 30);
+  M5.Lcd.setTextColor(BLACK);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.println("Checking...");
 
   String geminiResponse = askGemini(userFact);
 
   if (geminiResponse.length() == 0) {
     Serial.println("Empty response from Gemini.");
-    showStatusScreen("No Response", BLUE);
-    playSound(1000);  // error sound
+    showAnswerScreen("No Response", BLUE);
   } else {
     String answer = extractGeminiText(geminiResponse);
-
     Serial.println("Gemini Answer:");
     Serial.println(answer);
 
-    answer.toLowerCase();
+    String lowerAnswer = answer;
+    lowerAnswer.toLowerCase();
 
-    if (answer.indexOf("true") != -1) {
-      showStatusScreen("TRUE ✅", GREEN);
-      playSound(0, true, false); // success ding-ding
-    } else if (answer.indexOf("false") != -1) {
-      showStatusScreen("FALSE ❌", RED);
-      playSound(0, false, true); // sad low beep
+    if (lowerAnswer.indexOf("true") != -1) {
+      showAnswerScreen(answer, GREEN);
+      playCheeringSound();
+    } else if (lowerAnswer.indexOf("false") != -1) {
+      showAnswerScreen(answer, RED);
+      playSadSound();
     } else {
-      showStatusScreen("UNKNOWN", BLUE);
-      playSound(1000);           // unknown => normal beep
+      showAnswerScreen(answer, BLUE);  // Unknown response
+      M5.Beep.tone(1000, 500);
+      delay(500);
+      M5.Beep.mute();
     }
   }
 
@@ -84,40 +99,43 @@ void loop() {
   delay(10000);
 }
 
-// ---- HELPER FUNCTIONS ----
+// ------------- HELPER FUNCTIONS ------------------
 
-void playSound(int frequency, bool success, bool fail) {
-  if (success) {
-    M5.Beep.tone(2000, 150);
-    delay(200);
-    M5.Beep.tone(2500, 150);
-    delay(200);
-    M5.Beep.mute();
-  } 
-  else if (fail) {
-    M5.Beep.tone(500, 600);
-    delay(600);
-    M5.Beep.mute();
-  } 
-  else {
-    M5.Beep.tone(frequency, 500);
-    delay(500);
-    M5.Beep.mute();
+void playCheeringSound() {
+  int freqs[] = {1000, 1500, 2000, 2500}; // Rising happy tones
+  for (int i = 0; i < 4; i++) {
+    M5.Beep.tone(freqs[i], 100);
+    delay(150);
   }
+  M5.Beep.mute();
 }
 
-void showStatusScreen(String message, uint16_t bgColor) {
+void playSadSound() {
+  int freqs[] = {2000, 1500, 1000, 500}; // Falling sad tones
+  for (int i = 0; i < 4; i++) {
+    M5.Beep.tone(freqs[i], 200);
+    delay(250);
+  }
+  M5.Beep.mute();
+}
+
+void showAnswerScreen(String answer, uint16_t bgColor) {
   M5.Lcd.fillScreen(bgColor);
-  M5.Lcd.setTextColor(WHITE, bgColor);
-  M5.Lcd.setCursor(10, 30);
-  M5.Lcd.setTextSize(3);   // BIGGER TEXT
-  M5.Lcd.println(message);
+  M5.Lcd.setCursor(5, 10);
+  M5.Lcd.setTextColor(WHITE, bgColor); // White text on colored background
+  M5.Lcd.setTextSize(1);
+
+  int maxCharsPerLine = 40;
+  for (int i = 0; i < answer.length(); i += maxCharsPerLine) {
+    String line = answer.substring(i, min(i + maxCharsPerLine, (int)answer.length()));
+    M5.Lcd.println(line);
+  }
 }
 
 String askGemini(String question) {
   HTTPClient http;
   WiFiClientSecure client;
-  client.setInsecure();
+  client.setInsecure(); // Accept all SSL certs
 
   String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + String(gemini_api_key);
   http.begin(client, url);
