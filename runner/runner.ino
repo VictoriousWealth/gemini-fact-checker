@@ -111,7 +111,7 @@ void loop() {
 String sendAudioToApi(uint16_t* buffer) {
   // ❗ Instead of recording, just pretend we got this
   Serial.println("Simulating fake audio recording...");
-  return "Pluto is a planet"; // pretend user said this
+  return "The sun is a star"; // pretend user said this
 }
 
 // ------------- HELPER FUNCTIONS ------------------
