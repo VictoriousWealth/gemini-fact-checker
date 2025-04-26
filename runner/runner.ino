@@ -11,7 +11,7 @@ const char* ssid = "Josh-12-M-2";
 const char* password = "HelloWave1!";       
 
 // Gemini API Key
-const char* gemini_api_key = "AIzaSyAf0lnGC1ntkWYC4dyQzUoEYiwtGFxJ2wo";  
+const char* gemini_api_key = "YOUR+API+KEY+HERE";  
 
 // ------------- SETUP ------------------
 
