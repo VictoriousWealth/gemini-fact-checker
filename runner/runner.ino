@@ -116,7 +116,7 @@ String askGemini(String question) {
   client.setInsecure(); // Accept all certificates
 
   Serial.println("Building request for Gemini...");
-  String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + String(gemini_api_key);
+  String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + String(gemini_api_key);
   http.begin(client, url);
   http.addHeader("Content-Type", "application/json");
 
@@ -156,14 +156,25 @@ String parseGeminiResponse(String response) {
     return "Unknown";
   }
 
-  // Navigate to text content
+  // Check if "candidates" exists and has at least one element
+  if (!doc.containsKey("candidates") || doc["candidates"].size() == 0) {
+    Serial.println("No candidates found in response.");
+    return "Unknown";
+  }
+
+  // Extract the reply text
   const char* text = doc["candidates"][0]["content"]["parts"][0]["text"];
+  if (!text) {
+    Serial.println("No text found in candidates.");
+    return "Unknown";
+  }
+
   Serial.println("Parsed text:");
   Serial.println(text);
 
   String result = String(text);
 
-  // Decide based on content
+  // Analyze the response
   result.toLowerCase();
   if (result.indexOf("true") != -1 || result.indexOf("correct") != -1) {
     return "True";
