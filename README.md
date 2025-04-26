@@ -83,11 +83,11 @@ This inspired the team to design a **wearable badge** that empowers people to **
 
 | Name | Field | Contribution |
 |:-----|:------|:-------------|
-| **Nick Efe Oni** | Software Engineering | Lead Developer, Hardware Integration, Gemini API |
-| **Leroy Barnie** | Software Engineering | Support Developer, Networking Assistant |
-| **Josh** | Robotics Engineering | Idea Originator, Hardware Insights |
-| **Arj** | Mechatronics Engineering | Hardware Support, Troubleshooting Assistance |
-
+| [**Nick Efe Oni**](https://github.com/Vic)
+ | Software Engineering | Lead Developer, Hardware Integration, Gemini API |
+| [**Leroy Barnie**](https://github.com/yorelb) | Software Engineering | Support Developer, Networking Assistant |
+| [**Josh**](https://github.com/TheRealUnexpected42) | Robotics Engineering | Idea Originator, Hardware Insights |
+| [**Arj**](https://github.com/happydoko) | Mechatronics Engineering | Hardware Support, Troubleshooting Assistance |
 ---
 
 ## Commit and Line Stats (for transparency)
