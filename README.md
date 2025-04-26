@@ -103,7 +103,7 @@ _(Josh and Arj assisted directly with hardware setup, testing, and ideation rath
 
 # 🌟 Try it Out
 
-GitHub Repo: ![here](https://github.com/VictoriousWealth/gemini-fact-checker/)
+GitHub Repo: [here](https://github.com/VictoriousWealth/gemini-fact-checker/)
 
 ---
 
