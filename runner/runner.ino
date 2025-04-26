@@ -111,7 +111,7 @@ void loop() {
 String sendAudioToApi(uint16_t* buffer) {
   // ❗ Instead of recording, just pretend we got this
   Serial.println("Simulating fake audio recording...");
-  return "The sun is a star"; // pretend user said this
+  return "Pluto is a planet"; // pretend user said this
 }
 
 // ------------- HELPER FUNCTIONS ------------------
@@ -140,7 +140,7 @@ void showAnswerScreen(String answer, uint16_t bgColor) {
   M5.Lcd.setTextColor(WHITE, bgColor);
   M5.Lcd.setTextSize(1);
 
-  int maxCharsPerLine = 18;
+  int maxCharsPerLine = 40;
   for (int i = 0; i < answer.length(); i += maxCharsPerLine) {
     String line = answer.substring(i, min(i + maxCharsPerLine, (int)answer.length()));
     M5.Lcd.println(line);
@@ -158,7 +158,7 @@ String askGemini(String question) {
   http.begin(client, url);
   http.addHeader("Content-Type", "application/json");
 
-  String payload = "{\"contents\":[{\"parts\":[{\"text\":\"Is the following statement true? " + question + "\"}]}]}";
+  String payload = "{\"contents\":[{\"parts\":[{\"text\":\"Is the following statement true? (Answer with true or false and then the short explanation. Avoid saying \"not true\" if false and \"not false\" if true)" + question + "\"}]}]}";
 
   int httpResponseCode = http.POST(payload);
   Serial.print("HTTP Response code: ");
