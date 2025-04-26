@@ -93,8 +93,8 @@ This inspired the team to design a **wearable badge** that empowers people to **
 
 | Contributor | Commits | % of Total | Lines Changed | % of Total |
 |:-----------|:--------|:----------|:--------------|:----------|
-| Nick Efe Oni | 14 commits | 82.4% | 924 lines | 66.4% |
-| Leroy Barnie | 3 commits | 17.6% | 467 lines | 33.6% |
+| [**Nick Efe Oni**](https://github.com/Vic) | 14 commits | 82.4% | 924 lines | 66.4% |
+| [**Leroy Barnie**](https://github.com/yorelb) | 3 commits | 17.6% | 467 lines | 33.6% |
 
 _(Josh and Arj assisted directly with hardware setup, testing, and ideation rather than Git commits.)_
 
