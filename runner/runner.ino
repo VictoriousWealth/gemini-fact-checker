@@ -2,8 +2,12 @@
 
 void setup() {
   M5.begin();
-  M5.Lcd.println("Hello, M5StickC Plus!");
+  pinMode(10, OUTPUT); // On M5StickC Plus, LED is on GPIO 10
 }
 
 void loop() {
+  digitalWrite(10, HIGH);  // Turn LED on
+  delay(500);              // Wait 0.5 second
+  digitalWrite(10, LOW);   // Turn LED off
+  delay(500);              // Wait 0.5 second
 }
