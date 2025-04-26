@@ -67,9 +67,10 @@ void loop() {
   String userFact = "The sun is a star"; 
   Serial.println("Fact to check: " + userFact);
 
-  // Display user input
+  // Display "Checking..." and user fact
   display.clearDisplay();
   display.setCursor(0, 0);
+  display.setTextSize(1);
   display.println("Checking...");
   display.println(userFact);
   display.display();
@@ -80,35 +81,35 @@ void loop() {
 
   if (geminiResponse.length() == 0) {
     Serial.println("Empty response from Gemini.");
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Error getting");
+    display.println("response!");
+    display.display();
   } else {
     Serial.println("Received response:");
     Serial.println(geminiResponse);
-  }
 
-  // Parse Gemini's reply
-  Serial.println("Parsing Gemini response...");
-  String verdict = parseGeminiResponse(geminiResponse);
+    // Extract just the answer text
+    String answer = extractGeminiText(geminiResponse);
 
-  // Display verdict
-  Serial.println("Displaying verdict: " + verdict);
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.println("Result:");
-  display.println(verdict);
-  display.display();
+    // Display the Gemini answer on the OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.setTextSize(1);
 
-  // "Speak" verdict (Serial output for now)
-  if (verdict == "True") {
-    Serial.println("Speaker says: TRUE ✅");
-  } else if (verdict == "False") {
-    Serial.println("Speaker says: FALSE ❌");
-  } else {
-    Serial.println("Speaker says: Could not determine ❓");
+    int maxCharsPerLine = 21; // Fit nicely on 128x64
+    for (int i = 0; i < answer.length(); i += maxCharsPerLine) {
+      String line = answer.substring(i, min(i + maxCharsPerLine, answer.length()));
+      display.println(line);
+    }
+    display.display();
   }
 
   Serial.println("Waiting 10 seconds before next check...");
   delay(10000); // Wait 10 seconds before next check
 }
+
 
 String askGemini(String question) {
   HTTPClient http;
@@ -184,3 +185,33 @@ String parseGeminiResponse(String response) {
     return "Unknown";
   }
 }
+
+String extractGeminiText(String response) {
+  if (response.length() == 0) {
+    Serial.println("Empty response received for extraction.");
+    return "No response";
+  }
+
+  DynamicJsonDocument doc(4096);
+  DeserializationError error = deserializeJson(doc, response);
+
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return "Invalid JSON";
+  }
+
+  if (!doc.containsKey("candidates") || doc["candidates"].size() == 0) {
+    Serial.println("No candidates found in response.");
+    return "No candidates";
+  }
+
+  const char* text = doc["candidates"][0]["content"]["parts"][0]["text"];
+  if (!text) {
+    Serial.println("No text found in candidates.");
+    return "No text";
+  }
+
+  return String(text);
+}
+
