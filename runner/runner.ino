@@ -56,53 +56,68 @@ void setup() {
 // ------------- MAIN LOOP ------------------
 
 void loop() {
-  Serial.println("Starting fact check...");
+  M5.update(); // Make sure to update M5 buttons
 
-  String userFact = "The sun is a star";  // <-- CHANGE fact here
-  Serial.println("Fact to check: " + userFact);
+  if (M5.BtnA.wasPressed()) {  // Only when button A is clicked
+    Serial.println("Button A pressed, starting fake recording...");
 
-  // Show checking screen
-  M5.Lcd.fillScreen(YELLOW);
-  M5.Lcd.setCursor(10, 30);
-  M5.Lcd.setTextColor(BLACK);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.println("Checking...");
+    // Simulate recording audio
+    delay(1000); // simulate "listening"
+    String userFact = sendAudioToApi(NULL); // fake
 
-  String geminiResponse = askGemini(userFact);
+    Serial.println("Fact to check: " + userFact);
 
-  if (geminiResponse.length() == 0) {
-    Serial.println("Empty response from Gemini.");
-    showAnswerScreen("No Response", BLUE);
-  } else {
-    String answer = extractGeminiText(geminiResponse);
-    Serial.println("Gemini Answer:");
-    Serial.println(answer);
+    // Show "Checking..." screen
+    M5.Lcd.fillScreen(YELLOW);
+    M5.Lcd.setCursor(10, 30);
+    M5.Lcd.setTextColor(BLACK);
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.println("Checking...");
 
-    String lowerAnswer = answer;
-    lowerAnswer.toLowerCase();
+    String geminiResponse = askGemini(userFact);
 
-    if (lowerAnswer.indexOf("true") != -1) {
-      showAnswerScreen(answer, GREEN);
-      playCheeringSound();
-    } else if (lowerAnswer.indexOf("false") != -1) {
-      showAnswerScreen(answer, RED);
-      playSadSound();
+    if (geminiResponse.length() == 0) {
+      Serial.println("Empty response from Gemini.");
+      showAnswerScreen("No Response", BLUE);
     } else {
-      showAnswerScreen(answer, BLUE);  // Unknown response
-      M5.Beep.tone(1000, 500);
-      delay(500);
-      M5.Beep.mute();
-    }
-  }
+      String answer = extractGeminiText(geminiResponse);
+      Serial.println("Gemini Answer:");
+      Serial.println(answer);
 
-  Serial.println("Waiting 10s...");
-  delay(10000);
+      String lowerAnswer = answer;
+      lowerAnswer.toLowerCase();
+
+      if (lowerAnswer.indexOf("true") != -1) {
+        showAnswerScreen(answer, GREEN);
+        playCheeringSound();
+      } else if (lowerAnswer.indexOf("false") != -1) {
+        showAnswerScreen(answer, RED);
+        playSadSound();
+      } else {
+        showAnswerScreen(answer, BLUE);
+        M5.Beep.tone(1000, 500);
+        delay(500);
+        M5.Beep.mute();
+      }
+    }
+
+    Serial.println("Waiting 10s...");
+    delay(10000);
+  }
+}
+
+// ------------- FAKE AUDIO HANDLER ------------------
+
+String sendAudioToApi(uint16_t* buffer) {
+  // ❗ Instead of recording, just pretend we got this
+  Serial.println("Simulating fake audio recording...");
+  return "The sun is a star"; // pretend user said this
 }
 
 // ------------- HELPER FUNCTIONS ------------------
 
 void playCheeringSound() {
-  int freqs[] = {1000, 1500, 2000, 2500}; // Rising happy tones
+  int freqs[] = {1000, 1500, 2000, 2500};
   for (int i = 0; i < 4; i++) {
     M5.Beep.tone(freqs[i], 100);
     delay(150);
@@ -111,7 +126,7 @@ void playCheeringSound() {
 }
 
 void playSadSound() {
-  int freqs[] = {2000, 1500, 1000, 500}; // Falling sad tones
+  int freqs[] = {2000, 1500, 1000, 500};
   for (int i = 0; i < 4; i++) {
     M5.Beep.tone(freqs[i], 200);
     delay(250);
@@ -122,20 +137,22 @@ void playSadSound() {
 void showAnswerScreen(String answer, uint16_t bgColor) {
   M5.Lcd.fillScreen(bgColor);
   M5.Lcd.setCursor(5, 10);
-  M5.Lcd.setTextColor(WHITE, bgColor); // White text on colored background
+  M5.Lcd.setTextColor(WHITE, bgColor);
   M5.Lcd.setTextSize(1);
 
-  int maxCharsPerLine = 40;
+  int maxCharsPerLine = 18;
   for (int i = 0; i < answer.length(); i += maxCharsPerLine) {
     String line = answer.substring(i, min(i + maxCharsPerLine, (int)answer.length()));
     M5.Lcd.println(line);
   }
 }
 
+// ------------- GEMINI FUNCTIONS ------------------
+
 String askGemini(String question) {
   HTTPClient http;
   WiFiClientSecure client;
-  client.setInsecure(); // Accept all SSL certs
+  client.setInsecure();
 
   String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + String(gemini_api_key);
   http.begin(client, url);
